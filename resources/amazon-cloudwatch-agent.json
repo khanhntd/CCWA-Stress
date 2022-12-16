@@ -1,0 +1,25 @@
+{
+    "agent": {
+      "metrics_collection_interval": 60,
+      "run_as_user": "root",
+      "debug": true,
+      "region": "us-west-2"  
+     },
+    "metrics": {
+      "namespace": "Test",
+      "metrics_collected": {
+        "statsd": {
+          "metrics_aggregation_interval": 60,
+          "metrics_collection_interval": 60,
+          "service_address": ":8125"
+        }, 
+        "procstat": [
+          {
+            "exe": "cloudwatch-agent",
+            "measurement": ["cpu_usage","memory_rss"],
+            "metrics_collection_interval": 60
+          }
+        ]
+      }
+    }
+  }
