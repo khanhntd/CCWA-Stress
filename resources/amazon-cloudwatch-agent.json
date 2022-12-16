@@ -6,7 +6,7 @@
       "region": "us-west-2"  
      },
     "metrics": {
-      "namespace": "Test",
+      "namespace": "StressTest",
       "metrics_collected": {
         "statsd": {
           "metrics_aggregation_interval": 60,

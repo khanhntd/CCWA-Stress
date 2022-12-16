@@ -10,8 +10,9 @@ resource "random_id" "testing_id" {
 ##########################################
 
 locals {
-  cwagent_config         = fileexists("./resources/amazon_cloudwatch_agent.json")
-  cwagent_ecs_taskdef    = fileexists("./resources/statsd.sh")
+  cwagent_config = fileexists("./resources/amazon_cloudwatch_agent.json")
+  statsd         = fileexists("./resources/statsd.sh")
+  validation     = fileexists("./resources/validation.py")
 }
 
 #####################################################################
@@ -52,11 +53,25 @@ resource "aws_instance" "cwagent" {
 }
 
 resource "null_resource" "integration_test" {
+  provisioner "file" {
+    source      = file(local.cwagent_config)
+    destination = "/home/ec2-user/amazon_cloudwatch_agent.json"
+  }
+
+  provisioner "file" {
+    source      = file(local.statsd)
+    destination = "/home/ec2-user/statsd.sh"
+  }
+
+  provisioner "file" {
+    source      = file(local.validation)
+    destination = "/home/ec2-user/validation.py"
+  }
+
   # Prepare Integration Test
   provisioner "remote-exec" {
     inline = [
-        "sudo rpm -Uvh https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm",
-
+      "sudo rpm -Uvh https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm"
     ]
 
     connection {
@@ -70,7 +85,7 @@ resource "null_resource" "integration_test" {
   #Run sanity check and integration test
   provisioner "remote-exec" {
     inline = [
-
+        "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/home/ec2-user/amazon_cloudwatch_agent.json"
     ]
     connection {
       type        = "ssh"
