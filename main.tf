@@ -10,9 +10,8 @@ resource "random_id" "testing_id" {
 ##########################################
 
 locals {
-  cwagent_config = fileexists("./resources/amazon_cloudwatch_agent.json")
-  statsd         = fileexists("./resources/statsd.sh")
-  validation     = fileexists("./resources/validation.py")
+  cwagent_config = "./resources/amazon-cloudwatch-agent.json"
+  statsd         = "./resources/statsd.sh"
 }
 
 #####################################################################
@@ -20,13 +19,13 @@ locals {
 #####################################################################
 
 resource "tls_private_key" "ssh_key" {
-  count     = var.ssh_key_name == "" ? 1 : 0
+  count     =  1
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
 resource "aws_key_pair" "aws_ssh_key" {
-  count      = var.ssh_key_name == "" ? 1 : 0
+  count      = 1 
   key_name   = "ec2-key-pair-${random_id.testing_id.hex}"
   public_key = tls_private_key.ssh_key[0].public_key_openssh
 }
@@ -54,18 +53,25 @@ resource "aws_instance" "cwagent" {
 
 resource "null_resource" "integration_test" {
   provisioner "file" {
-    source      = file(local.cwagent_config)
+    source      = local.cwagent_config
     destination = "/home/ec2-user/amazon_cloudwatch_agent.json"
+    connection {
+      type        = "ssh"
+      user        = "ec2-user"
+      private_key = local.private_key_content
+      host        = aws_instance.cwagent.public_ip
+    }
   }
 
   provisioner "file" {
-    source      = file(local.statsd)
+    source      = local.statsd
     destination = "/home/ec2-user/statsd.sh"
-  }
-
-  provisioner "file" {
-    source      = file(local.validation)
-    destination = "/home/ec2-user/validation.py"
+    connection {
+      type        = "ssh"
+      user        = "ec2-user"
+      private_key = local.private_key_content
+      host        = aws_instance.cwagent.public_ip
+    }
   }
 
   # Prepare Integration Test
@@ -76,7 +82,7 @@ resource "null_resource" "integration_test" {
 
     connection {
       type        = "ssh"
-      user        = var.user
+      user        = "ec2-user"
       private_key = local.private_key_content
       host        = aws_instance.cwagent.public_ip
     }
@@ -85,7 +91,8 @@ resource "null_resource" "integration_test" {
   #Run sanity check and integration test
   provisioner "remote-exec" {
     inline = [
-        "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/home/ec2-user/amazon_cloudwatch_agent.json"
+        "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/home/ec2-user/amazon_cloudwatch_agent.json",
+        "sudo bash /home/ec2-user/statsd.sh"
     ]
     connection {
       type        = "ssh"
@@ -106,4 +113,14 @@ data "aws_ami" "latest" {
     name   = "name"
     values = ["cloudwatch-agent-integration-test-al2*"]
   }
+}
+
+resource "null_resource" "validator" {
+  provisioner "local-exec" {
+    command = <<-EOT
+      echo "Validating metrics/logs"
+      go test  ./resources/validate_test.go
+    EOT
+  }
+  depends_on = [aws_instance.cwagent, null_resource.integration_test]
 }
