@@ -63,17 +63,6 @@ resource "null_resource" "integration_test" {
     }
   }
 
-  provisioner "file" {
-    source      = local.statsd
-    destination = "/home/ec2-user/statsd.sh"
-    connection {
-      type        = "ssh"
-      user        = "ec2-user"
-      private_key = local.private_key_content
-      host        = aws_instance.cwagent.public_ip
-    }
-  }
-
   # Prepare Integration Test
   provisioner "remote-exec" {
     inline = [
@@ -94,7 +83,7 @@ resource "null_resource" "integration_test" {
         "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/home/ec2-user/amazon_cloudwatch_agent.json",
         "git clone https://github.com/khanhntd/CCWA-Stress.git",
         "cd CCWA-Stress",
-        "go test  ./resources/validate_test.go"
+        "go run  ./resources/main.go"
         
     ]
     connection {
@@ -116,14 +105,4 @@ data "aws_ami" "latest" {
     name   = "name"
     values = ["cloudwatch-agent-integration-test-al2*"]
   }
-}
-
-resource "null_resource" "validator" {
-  provisioner "local-exec" {
-    command = <<-EOT
-      echo "Validating metrics/logs"
-      go test  ./resources/validate_test.go
-    EOT
-  }
-  depends_on = [aws_instance.cwagent, null_resource.integration_test]
 }
