@@ -46,9 +46,6 @@ resource "aws_instance" "cwagent" {
   vpc_security_group_ids      = [aws_security_group.ec2_security_group.id]
   associate_public_ip_address = true
 
-  tags = {
-    Name = "cwagent-integ-test-ec2-${random_id.testing_id.hex}"
-  }
 }
 
 resource "null_resource" "integration_test" {

@@ -28,7 +28,7 @@ var (
 )
 
 var threshold = map[int]float64{
-	100:   89000000,
+	100:   90708352,
 	1000:  89000000,
 	10000: 89000000,
 }
@@ -112,7 +112,7 @@ func GetMetricDataResults(namespace, metricName string, metricSpecificDimensions
 		MetricName: aws.String(metricName),
 		Dimensions: dimensions,
 	}
-
+	log.Printf("%v", dimensions)
 	metricQueryPeriod := int32(60)
 	metricDataQueries := []types.MetricDataQuery{
 		{
