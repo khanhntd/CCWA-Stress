@@ -28,9 +28,9 @@ var (
 )
 
 var threshold = map[int]float64{
-	100:   90708352,
-	1000:  89000000,
-	10000: 89000000,
+	100:   90708352.0,
+	1000:  90708352.0,
+	10000: 90708352.0,
 }
 
 var dimension = []types.Dimension{
@@ -58,6 +58,7 @@ func main() {
 			}
 
 			for _, value := range metricValues {
+				log.Printf("subtracting %v", value-threshold[tps])
 				if value >= threshold[tps] {
 					log.Fatalln("The metrics is past threshold")
 				}
