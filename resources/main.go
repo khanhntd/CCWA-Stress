@@ -115,7 +115,7 @@ func GetMetricDataResults(namespace, metricName string, metricSpecificDimensions
 		MetricName: aws.String(metricName),
 		Dimensions: dimensions,
 	}
-	log.Printf("test %v %v %v %v", ec2InstanceId, dimensions, namespace, metricName)
+	log.Printf("test %v %v %v %v", ec2InstanceId, &dimensions, namespace, metricName)
 	metricQueryPeriod := int32(60)
 	metricDataQueries := []types.MetricDataQuery{
 		{

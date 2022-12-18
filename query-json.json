@@ -1,29 +1,29 @@
 {
     "MetricDataQueries":[
       {
-        "Id": "m1",
+        "Id": "procstat_memory_rss",
         "MetricStat": {
           "Metric": {
             "Namespace": "StressTest",
             "MetricName": "procstat_memory_rss",
             "Dimensions": [
+                {
+                    "Name": "process_name",
+                    "Value": "amazon-cloudwatch-agent"
+                  },
+                  {
+                    "Name": "exe",
+                    "Value": "cloudwatch-agent"
+                  },
               {
                 "Name": "InstanceId",
                 "Value": "i-06b2ed471d32fd43b"
-              },
-              {
-                "Name": "process_name",
-                "Value": "amazon-cloudwatch-agent"
-              },
-              {
-                "Name": "exe",
-                "Value": "cloudwatch-agent"
               }
+              
             ]
           },
           "Period": 60,
-          "Stat": "Average",
-          "Unit": "Bytes"
+          "Stat": "Average"
         }
       }
     ],
