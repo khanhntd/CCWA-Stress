@@ -12,6 +12,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 	"github.com/cactus/go-statsd-client/v5/statsd"
@@ -100,10 +101,16 @@ func GetCloudWatchMetricsClient() (*cloudwatch.Client, *context.Context, error) 
 }
 
 func GetMetricDataResults(namespace, metricName string, metricSpecificDimensions []types.Dimension) ([]float64, error) {
+	ec2InstanceId := GetInstanceId()
+	instanceIdDimensions := types.Dimension{
+		Name:  aws.String("InstanceId"),
+		Value: aws.String(ec2InstanceId),
+	}
+	dimensions := append(metricSpecificDimensions, instanceIdDimensions)
 	metricToFetch := types.Metric{
 		Namespace:  aws.String(namespace),
 		MetricName: aws.String(metricName),
-		Dimensions: metricSpecificDimensions,
+		Dimensions: dimensions,
 	}
 
 	metricQueryPeriod := int32(60)
@@ -146,4 +153,21 @@ func GetMetricDataResults(namespace, metricName string, metricSpecificDimensions
 func subtractMinutes(fromTime time.Time, minutes int) time.Time {
 	tenMinutes := time.Duration(-1*minutes) * time.Minute
 	return fromTime.Add(tenMinutes)
+}
+
+func GetInstanceId() string {
+	ctx := context.Background()
+	c, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		// fail fast so we don't continue the test
+		log.Fatalf("Error occurred while creating SDK config: %v", err)
+	}
+
+	// TODO: this only works for EC2 based testing
+	client := imds.NewFromConfig(c)
+	metadata, err := client.GetInstanceIdentityDocument(ctx, &imds.GetInstanceIdentityDocumentInput{})
+	if err != nil {
+		log.Fatalf("Error occurred while retrieving EC2 instance ID: %v", err)
+	}
+	return metadata.InstanceID
 }
