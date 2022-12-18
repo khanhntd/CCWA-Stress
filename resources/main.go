@@ -50,6 +50,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("Send statstd stress failed")
 		}
+		log.Printf("Begin to send statsd metrics to CWA with number of metrics %d", tps)
 		for currentRetry := 1; ; currentRetry++ {
 
 			metricValues, err := GetMetricDataResults("StressTest", "procstat_memory_rss", dimension)
@@ -69,6 +70,7 @@ func main() {
 			}
 		}
 	}
+	log.Fatalf("Always fail")
 }
 
 func sendStatsDStress(tps int) error {
