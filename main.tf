@@ -60,19 +60,7 @@ resource "null_resource" "integration_test" {
     }
   }
 
-  # Prepare Integration Test
-  provisioner "remote-exec" {
-    inline = [
-      "sudo rpm -Uvh https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm"
-    ]
-
-    connection {
-      type        = "ssh"
-      user        = "ec2-user"
-      private_key = local.private_key_content
-      host        = aws_instance.cwagent.public_ip
-    }
-  }
+  
 
   #Run sanity check and integration test
   provisioner "remote-exec" {

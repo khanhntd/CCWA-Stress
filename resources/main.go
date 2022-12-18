@@ -50,6 +50,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("Send statstd stress failed")
 		}
+		time.Sleep(2 * time.Minute)
 		log.Printf("Begin to send statsd metrics to CWA with number of metrics %d", tps)
 		for currentRetry := 1; ; currentRetry++ {
 
@@ -129,7 +130,7 @@ func GetMetricDataResults(namespace, metricName string, metricSpecificDimensions
 	}
 
 	endTime := time.Now()
-	startTime := subtractMinutes(endTime, 10)
+	startTime := subtractMinutes(endTime, 2)
 	getMetricDataInput := cloudwatch.GetMetricDataInput{
 		StartTime:         &startTime,
 		EndTime:           &endTime,
