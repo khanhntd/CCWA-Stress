@@ -92,7 +92,10 @@ resource "null_resource" "integration_test" {
   provisioner "remote-exec" {
     inline = [
         "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/home/ec2-user/amazon_cloudwatch_agent.json",
-        "sudo bash /home/ec2-user/statsd.sh"
+        "git clone https://github.com/khanhntd/CCWA-Stress.git",
+        "cd CCWA-Stress",
+        "go test  ./resources/validate_test.go"
+        
     ]
     connection {
       type        = "ssh"

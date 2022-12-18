@@ -1,17 +1,13 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT
 
-//go:build integration
-// +build integration
-
-package ecs_metadata
+package main
 
 import (
 	"context"
 	"fmt"
 	"log"
 	"strings"
-	"testing"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -20,41 +16,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 )
 
-const (
-	RetryTime = 15
-)
-
 var (
 	ctx context.Context
 	cwm *cloudwatch.Client
 )
-
-var dimension = []types.Dimension{
-	{
-		Name:  aws.String("exe"),
-		Value: aws.String("cloudwatch-agent"),
-	},
-	{
-		Name:  aws.String("process_name"),
-		Value: aws.String("amazon-cloudwatch-agent"),
-	},
-}
-
-func TestValidatingCloudWatchLogs(t *testing.T) {
-	for currentRetry := 1; ; currentRetry++ {
-		metricValues, err := GetMetricDataResults("StressTest", "procstat_memory_rss", dimension)
-		if err != nil {
-			t.Fatalf("Fail because of %v", err)
-		}
-		for _, value := range metricValues {
-			fmt.Printf("test %v", value)
-		}
-		if currentRetry == 15 {
-			break
-		}
-	}
-	t.Fatalf("Always fail")
-}
 
 func GetCloudWatchMetricsClient() (*cloudwatch.Client, *context.Context, error) {
 	if cwm == nil {
