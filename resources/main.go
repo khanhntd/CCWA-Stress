@@ -28,9 +28,9 @@ var (
 )
 
 var threshold = map[int]float64{
-	100:   90708352.0,
+	100:   67000000.0,
 	1000:  90708352.0,
-	10000: 90708352.0,
+	10000: 120708352.0,
 }
 
 var dimension = []types.Dimension{
@@ -52,22 +52,20 @@ func main() {
 		}
 		time.Sleep(2 * time.Minute)
 		log.Printf("Begin to send statsd metrics to CWA with number of metrics %d", tps)
-		for currentRetry := 1; ; currentRetry++ {
 
-			metricValues, err := GetMetricDataResults("StressTest", "procstat_memory_rss", dimension)
-			if err != nil {
-				log.Fatalf("Fail get metric data result because of %v", err)
-			}
+		metricValues, err := GetMetricDataResults("StressTest", "procstat_memory_rss", dimension)
+		if err != nil {
+			log.Fatalf("Fail get metric data result because of %v", err)
+		}
 
-			for _, value := range metricValues {
-				log.Printf("subtracting %v", value-threshold[tps])
-				if value >= threshold[tps] {
-					log.Fatalln("The metrics is past threshold")
-				}
-			}
+		if len(metricValues) == 0 {
+			continue
+		}
 
-			if currentRetry == 15 {
-				break
+		for _, value := range metricValues {
+			log.Printf("subtracting %v", value-threshold[tps])
+			if value-threshold[tps] < 0 {
+				log.Fatalln("The metrics is past threshold")
 			}
 		}
 	}
