@@ -64,12 +64,11 @@ func main() {
 
 		for _, value := range metricValues {
 			log.Printf("subtracting %v", value-threshold[tps])
-			if value-threshold[tps] < 0 {
+			if value-threshold[tps] > 0 {
 				log.Fatalln("The metrics is past threshold")
 			}
 		}
 	}
-	log.Fatalf("Always fail")
 }
 
 func sendStatsDStress(tps int) error {
