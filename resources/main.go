@@ -71,7 +71,7 @@ func sendStatsDStress(tps int) error {
 	defer client.Close()
 
 	for time := 0; time < tps; time++ {
-		client.Inc(fmt.Sprintf("statsd_%v", time), time, 1.0)
+		client.Inc(fmt.Sprintf("statsd_%v", time), int64(time), 1.0)
 	}
 	return nil
 }
