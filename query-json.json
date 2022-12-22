@@ -22,7 +22,7 @@
               
             ]
           },
-          "Period": 60,
+          "Period": 120,
           "Stat": "Average"
         }
       }
